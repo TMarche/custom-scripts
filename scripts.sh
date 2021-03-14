@@ -57,6 +57,17 @@ openbooks () {
     msedge $(findbooks -p "${SEARCH_STR}" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g") &> /dev/null &
 }
 
+## This will need a lot of work in order to function correctly
+googlebooks () {
+    local SEARCH_STR="${1:-}"
+    BOOKS=$(findbooks -p "${SEARCH_STR}" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g")
+    SEARCH_STRINGS=$(echo "${BOOKS}" | grep -oP "\/([^\/]*?)\.pdf\$" | grep -oP "\w+" | grep -v "pdf")
+    for SEARCH_STRING in "${SEARCH_STRINGS}"; do
+        URL="https://www.google.com/search?rlz=1C1CHBF_enUS874US874&sxsrf=ALeKk021G8JFaE1QUxjqI4RjUpbiPVeg9w%3A1615756163275&ei=g3tOYIePEIeo_QapgJZI&q=${SEARCH_STRING}&oq=${SEARCH_STRING}&gs_lcp=Cgdnd3Mtd2l6EAMyBAgAEA0yBAgAEA0yBAguEA0yBAgAEA0yBAgAEA0yBAgAEA0yBAgAEA0yBAgAEA0yBggAEA0QHjIGCAAQDRAeOgQIABBHOgYIABAHEB5QiAlY5yxggDJoAHADeACAAZIBiAH1ApIBAzAuM5gBAKABAaoBB2d3cy13aXrIAQjAAQE&sclient=gws-wiz&ved=0ahUKEwjH3J7h2LDvAhUHVN8KHSmABQkQ4dUDCA0&uact=5"
+        chrome $URL 
+    done;
+}
+
 ## MISC
 #########
 win2lin () { f="${1/C://c}"; printf '%s\n' "${f//\\//}"; }
