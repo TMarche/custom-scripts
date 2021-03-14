@@ -6,7 +6,6 @@
 
 BOOK_LOC="/c/Users/tmarc/OneDrive/Desktop/Media/Books"
 
-
 ########################################################################
 ## FUNCTIONS                                                          ##
 ########################################################################
@@ -35,14 +34,13 @@ findbooks () {
 
     ## Pipe into sed to use relative paths for searching
     local ALL_BOOKS=$(find "${BOOK_LOC}" -type f -iname '*.pdf' | sed -n -e "s;^${BOOK_LOC}/;;p")
-    local MATCHING_BOOKS=$(echo "${ALL_BOOKS}" | grep -iP "${SEARCH_STR}")
+    local MATCHING_BOOKS=$(echo "${ALL_BOOKS}" | grep -iP "${SEARCH_STR}" --color=always)
     debug "MATCHING_BOOKS:\n${MATCHING_BOOKS}"
 
     ## Return full file paths -- paths must be rebuilt using BOOK_LOC config var
     if [ ! -z ${USE_FULL_PATHS+x} ]; then
-        BOOK_ARR=(${MATCHING_BOOKS})
-        BOOK_ARR=( ${BOOK_ARR[@]/#/$BOOK_LOC} )
-        echo "${BOOK_ARR[@]}"
+        WITH_PREFIX=$(echo "${MATCHING_BOOKS}" | sed -n -e "s;^;${BOOK_LOC}/;p")
+        echo "${WITH_PREFIX}"
         return
     fi
 
@@ -52,9 +50,11 @@ findbooks () {
 
 ## In order for this command to work, the user must have the 'msedge'
 ## program added to the system path
+## NOTE: msedge requires the FULL PATH of a file in order to open it
 openbooks () {
     local SEARCH_STR="${1:-}"
-    msedge $(findbooks -p "${SEARCH_STR}") &> /dev/null &
+    ## Use 'sed' to strip out color control characters
+    msedge $(findbooks -p "${SEARCH_STR}" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g") &> /dev/null &
 }
 
 ## MISC
