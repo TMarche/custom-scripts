@@ -29,19 +29,25 @@ findbooks () {
         shift;
     done;
 
-    ## Perform book search
+    ## Create search string
     local SEARCH_STR="${POSITIONAL:-}"
-    local BOOK_PATHS="$(find ${BOOK_LOC} -type f -iname '*.pdf')"
-    debug "RESULTS: ${RESULTS}"
+    debug "SEARCH_STR: ${SEARCH_STR}"
 
-    ## Return full file paths
+    ## Pipe into sed to use relative paths for searching
+    local ALL_BOOKS=$(find "${BOOK_LOC}" -type f -iname '*.pdf' | sed -n -e "s;^${BOOK_LOC}/;;p")
+    local MATCHING_BOOKS=$(echo "${ALL_BOOKS}" | grep -iP "${SEARCH_STR}")
+    debug "MATCHING_BOOKS:\n${MATCHING_BOOKS}"
+
+    ## Return full file paths -- paths must be rebuilt using BOOK_LOC config var
     if [ ! -z ${USE_FULL_PATHS+x} ]; then
-        echo "${BOOK_PATHS}" | grep -iP "${SEARCH_STR}"
+        BOOK_ARR=(${MATCHING_BOOKS})
+        BOOK_ARR=( ${BOOK_ARR[@]/#/$BOOK_LOC} )
+        echo "${BOOK_ARR[@]}"
         return
     fi
 
     ## Return truncated file paths
-    echo "${BOOK_PATHS}" | sed -n -e "s/^.*\/Books\///p" | grep -iP "${SEARCH_STR}"
+    echo "${MATCHING_BOOKS}"
 }
 
 ## In order for this command to work, the user must have the 'msedge'
@@ -65,6 +71,6 @@ vimtab () {
 ## If DEBUG is set, then display the given string
 function debug() {
     if [ ! -z ${DEBUG+x} ]; then
-        echo "$@"
+        echo -e "$@"
     fi
 }
