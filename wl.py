@@ -1,3 +1,4 @@
+#!python
 
 def print_reps(base, max_reps, warmup_sets=4):
     reps = calculate_reps(base, max_reps, warmup_sets)
